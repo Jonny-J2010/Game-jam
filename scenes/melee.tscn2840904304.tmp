@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://crcm6xxn0q1aw"]
+
+[ext_resource type="Script" uid="uid://b7i2jwnwyyune" path="res://melee.gd" id="1_gt438"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_y0ovp"]
+size = Vector2(50, 116)
+
+[node name="Area2D" type="Area2D" unique_id=1283183487]
+script = ExtResource("1_gt438")
+
+[node name="melee_hit" type="Timer" parent="." unique_id=2024906709]
+wait_time = 0.3
+one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1593775646]
+position = Vector2(2, 15)
+shape = SubResource("RectangleShape2D_y0ovp")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=729540363]
+offset_left = -331.0
+offset_top = -190.0
+offset_right = 568.0
+offset_bottom = 291.0
+
+[connection signal="timeout" from="melee_hit" to="CollisionShape2D" method="_melee_over"]
