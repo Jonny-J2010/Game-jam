@@ -2,7 +2,7 @@ extends CharacterBody2D
 var direction
 @export var player = CharacterBody2D
 @export var health_ui = ProgressBar
-@export var bullet_scene = PackedScene
+@export var bullet_scene: PackedScene   # PARRY: was "= PackedScene", which made instantiate() fail. Needs ":"
 @export var bullet_right_spawn = Marker2D
 @export var bullet_left_spawn = Marker2D
 const SPEED = 400.0

@@ -295,10 +295,10 @@ animations = [{
 "texture": ExtResource("57_fr8ja")
 }, {
 "duration": 1.0,
-"texture": ExtResource("58_gvmy4")
+"texture": ExtResource("59_fcu33")
 }, {
 "duration": 1.0,
-"texture": ExtResource("59_fcu33")
+"texture": ExtResource("58_gvmy4")
 }],
 "loop": false,
 "name": &"parry",
