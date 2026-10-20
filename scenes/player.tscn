@@ -57,10 +57,15 @@
 [ext_resource type="Texture2D" uid="uid://iel0i8eqaqxy" path="res://player/Run (1).png" id="52_pskma"]
 [ext_resource type="Texture2D" uid="uid://b78h1fpudnss7" path="res://player/Run (2).png" id="53_3sdik"]
 [ext_resource type="Texture2D" uid="uid://b2e07y468d0m3" path="res://player/Run (3).png" id="54_dkvgp"]
+[ext_resource type="Texture2D" uid="uid://cwastpx8ywnk4" path="res://player/Parry_1.png" id="55_4vfid"]
 [ext_resource type="Texture2D" uid="uid://y00t4fc3ttcc" path="res://player/Run (4).png" id="55_siwmy"]
 [ext_resource type="Texture2D" uid="uid://cajtwkhh7kwwf" path="res://player/Run (5).png" id="56_djlqh"]
+[ext_resource type="Texture2D" uid="uid://d15w6th1i61ih" path="res://player/Parry_2.png" id="56_ljgr3"]
+[ext_resource type="Texture2D" uid="uid://c7cgnt2xx8uvc" path="res://player/Parry_3.png" id="57_fr8ja"]
 [ext_resource type="Texture2D" uid="uid://cqprrgfceqs64" path="res://player/Run (6).png" id="57_nure8"]
 [ext_resource type="Texture2D" uid="uid://ckl7ixugrf15e" path="res://player/Run (7).png" id="58_doy3c"]
+[ext_resource type="Texture2D" uid="uid://b7h8asdq4rvn4" path="res://player/Parry_5.png" id="58_gvmy4"]
+[ext_resource type="Texture2D" uid="uid://qk50b3flcn03" path="res://player/Parry_4.png" id="59_fcu33"]
 [ext_resource type="Texture2D" uid="uid://bxkbjsnvcqjri" path="res://player/Run (8).png" id="59_o4jhu"]
 [ext_resource type="Texture2D" uid="uid://bvyhg31i3ur7a" path="res://player/RunShoot (1).png" id="60_o5ler"]
 [ext_resource type="Texture2D" uid="uid://btstcgbx7idc4" path="res://player/RunShoot (2).png" id="61_rk5q0"]
@@ -85,7 +90,7 @@
 [ext_resource type="Texture2D" uid="uid://blvrokx0vpvtc" path="res://player/Slide (8).png" id="80_s1202"]
 [ext_resource type="Texture2D" uid="uid://ct302ya2salvr" path="res://player/Slide (9).png" id="81_hrkui"]
 [ext_resource type="Texture2D" uid="uid://cp8ks5qkk2mh8" path="res://player/Slide (10).png" id="82_phduw"]
-[ext_resource type="Texture2D" uid="uid://dvsdk2svgjvp1" path="res://ammo-removebg-preview.png" id="86_lw0jh"]
+[ext_resource type="Texture2D" uid="uid://dvsdk2svgjvp1" path="res://player/ammo-removebg-preview.png" id="86_lw0jh"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_7gga0"]
 radius = 26.0
@@ -281,6 +286,26 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": ExtResource("55_4vfid")
+}, {
+"duration": 1.0,
+"texture": ExtResource("56_ljgr3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("57_fr8ja")
+}, {
+"duration": 1.0,
+"texture": ExtResource("58_gvmy4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("59_fcu33")
+}],
+"loop": false,
+"name": &"parry",
+"speed": 24.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": ExtResource("52_pskma")
 }, {
 "duration": 1.0,
@@ -414,8 +439,7 @@ shape = SubResource("CapsuleShape2D_7gga0")
 position = Vector2(2.7000027, 0.60000324)
 scale = Vector2(0.2, 0.2)
 sprite_frames = SubResource("SpriteFrames_l6n6j")
-animation = &"run"
-frame_progress = 0.8230834
+animation = &"parry"
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=595907279]
 position = Vector2(-3.3000603, 9.599972)

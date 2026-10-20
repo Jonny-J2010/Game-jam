@@ -208,7 +208,6 @@ func _handle_parry(delta) -> bool:
 		parrying = false
 		parry_recovering = true
 		parry_timer = parry_recovery
-		$AnimatedSprite2D.modulate = Color(0.5, 0.5, 0.5)   # grey = stuck after a miss
 	elif parry_recovering and parry_timer <= 0.0:
 		parry_recovering = false
 		$AnimatedSprite2D.modulate = Color.WHITE
@@ -227,7 +226,6 @@ func _start_parry() -> void:
 	# Plays a "parry" animation if you've made one in your AnimatedSprite2D, otherwise just tints blue.
 	if $AnimatedSprite2D.sprite_frames.has_animation("parry"):
 		$AnimatedSprite2D.play("parry")
-	$AnimatedSprite2D.modulate = Color(0.3, 0.6, 1.0)   # blue = parrying
 
 
 # Enemies and enemy bullets should call this instead of hurting the player directly:
@@ -251,8 +249,7 @@ func _on_parry_success(attacker: Node) -> void:
 	parrying = false
 	parry_recovering = false
 	parry_timer = 0.0
-	parry_buffer_timer = 0.0
-	$AnimatedSprite2D.modulate = Color(1.0, 1.0, 0.4)   # yellow flash
+	parry_buffer_timer = 0.0 
 	create_tween().tween_property($AnimatedSprite2D, "modulate", Color.WHITE, 0.25)
 	if attacker.has_method("get_parried"):
 		attacker.get_parried()   # the enemy / bullet decides what being parried does
