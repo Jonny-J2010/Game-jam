@@ -1,24 +1,29 @@
 extends CharacterBody2D
+
+const SPEED = 500
+const JUMP_VELOCITY = -500
+
+
 var running = false
 var jumping = false
 var shooting = false
 var hitting = false
-const SPEED = 500
-const JUMP_VELOCITY = -500
 var direction
-@export var player = CharacterBody2D
-@export var bullet_right_spawn: Marker2D
-@export var bullet_left_spawn: Marker2D
-@export var bullet_scene: PackedScene
 var shot_fired = true
-@export var ammo_label: Label
 var facing = "right"
 var just_hit = true
-@export var melee_scene: PackedScene
 var rjsh = [0,0,0,0]
 var score = 0
 var ammo = 20
 var hello = 0
+
+
+@export var player = CharacterBody2D
+@export var bullet_right_spawn: Marker2D
+@export var bullet_left_spawn: Marker2D
+@export var bullet_scene: PackedScene
+@export var ammo_label: Label
+@export var melee_scene: PackedScene
 
 
 
