@@ -21,6 +21,12 @@ var left_jump = false
 var in_range
 var shot_fired = false
 
+# --- PARRY: new variables ---
+@export var stagger_time = 1.2              # seconds the enemy is stunned after its bullet gets parried
+@export var stagger_damage_multiplier = 3   # damage you deal is multiplied by this while it is stunned
+var staggered = false                       # true while the enemy is stunned
+var stagger_timer = 0.0                     # seconds of stun left
+
 
 
 func _physics_process(delta: float) -> void:
@@ -28,6 +34,15 @@ func _physics_process(delta: float) -> void:
 		jumping = true
 		velocity += get_gravity() * delta
 	if is_dead == false:
+
+		# PARRY: while staggered the enemy just stands still (gravity above still applies)
+		if staggered:
+			stagger_timer -= delta
+			velocity.x = move_toward(velocity.x, 0, SPEED)
+			move_and_slide()
+			if stagger_timer <= 0.0:
+				_end_stagger()
+			return
 
 		if player_in_sight and not player_in_range and safe:
 			var relative_position = player.global_position - global_position
@@ -79,6 +94,10 @@ func _process(delta):
 		safe = true
 	health_ui.value = health
 
+	# PARRY: while staggered, skip the jump / animation / facing code below
+	if staggered:
+		return
+
 	if is_dead == false:
 		if player_in_sight and $right_jump.is_colliding() and $left_jump.is_colliding() and velocity.x == 0:
 			jump()
@@ -126,13 +145,19 @@ func _process(delta):
 				facing = "left"
 
 
-func take_damage() -> void:
+# PARRY: "amount = 1" means your existing take_damage() calls still work with no number
+func take_damage(amount = 1) -> void:
 	if is_dead:
 		return
-	health -=1
+	# PARRY: hits land harder while the enemy is staggered
+	if staggered:
+		amount *= stagger_damage_multiplier
+	health -= amount
 	if health <= 0:
 		health = 0
 		is_dead = true
+		staggered = false                        # PARRY: so the death animation plays normally
+		$AnimatedSprite2D.modulate = Color.WHITE
 		player.add_score()
 		$AnimatedSprite2D.play("dead")
 		$Timer.start()
@@ -192,9 +217,10 @@ func stop_moving() -> void:
 
 
 func shoot() -> void:
-	if shot_fired:
+	if shot_fired or staggered:   # PARRY: no shooting while staggered
 		return
-	var bullet
+	var bullet = bullet_scene.instantiate()   # PARRY: this line was missing, so bullet was null and shoot() would crash
+	bullet.set("shooter", self)   # PARRY: lets the bullet tell this enemy when it gets parried
 
 	if facing == "right":
 		bullet.global_position = bullet_right_spawn.global_position
@@ -208,3 +234,27 @@ func shoot() -> void:
 
 	add_sibling(bullet)
 	shot_fired = true
+
+
+
+# ---------------- PARRY ----------------
+
+# Called by the bullet when the player parries it (see the bullet snippet).
+func get_parried() -> void:
+	if is_dead:
+		return
+	staggered = true
+	stagger_timer = stagger_time
+	direction = 0
+	running = false
+	$AnimatedSprite2D.modulate = Color(1.0, 1.0, 0.3)   # yellow = stunned, hit it now for bonus damage
+	# Plays a "stagger" animation if you've made one in your AnimatedSprite2D, otherwise idle + yellow tint.
+	if $AnimatedSprite2D.sprite_frames.has_animation("stagger"):
+		$AnimatedSprite2D.play("stagger")
+	else:
+		$AnimatedSprite2D.play("idle")
+
+
+func _end_stagger() -> void:
+	staggered = false
+	$AnimatedSprite2D.modulate = Color.WHITE
