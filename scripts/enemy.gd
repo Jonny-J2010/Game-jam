@@ -22,9 +22,8 @@ var meele_cooldown_left: float = 0.0
 # --- MELEE: new variables ---
 @export var melee_range = 70.0     # distance (pixels) at which the enemy stops, stops jumping and attacks. Tune this!
 @export var melee_damage = 1       # damage dealt to the player per hit
-@export var player_damage_method: StringName = "take_damage"   # name of the function on your PLAYER script that removes health
 @export var meele_scene: PackedScene   # drag your meele scene (an Area2D with a CollisionShape2D) in here
-@export var melee_windup = 0.3     # seconds between starting the swing and the hitbox appearing
+@export var melee_windup = 0.5     # seconds of orange "wind-up" before the hitbox appears. This is the player's warning to parry
 @export var melee_active_time = 0.15   # seconds the hitbox stays active
 @export var melee_offset = 40.0    # how far in front of the enemy the hitbox appears (pixels)
 var attacking = false              # true while a swing is in progress
@@ -253,9 +252,17 @@ func melee_attack() -> void:
 	attacking = true
 	meele_cooldown_left = meele_cooldown
 
-	# Plays an "attack" animation if you've made one in your AnimatedSprite2D, otherwise idle.
-	if $AnimatedSprite2D.sprite_frames.has_animation("attack"):
-		$AnimatedSprite2D.play("attack")
+	# Telegraph: the enemy glows orange during the wind-up so the player knows when to parry
+	$AnimatedSprite2D.modulate = Color(1.0, 0.55, 0.2)
+
+	# Plays the enemy's "hit" animation (or an "attack" one if you make it), sped up so one
+	# play-through lasts exactly windup + active time.
+	var frames = $AnimatedSprite2D.sprite_frames
+	var swing_anim = "attack" if frames.has_animation("attack") else "hit"
+	if frames.has_animation(swing_anim):
+		var natural_length = frames.get_frame_count(swing_anim) / frames.get_animation_speed(swing_anim)
+		$AnimatedSprite2D.play(swing_anim, natural_length / (melee_windup + melee_active_time))
+		$AnimatedSprite2D.frame = 0
 	else:
 		$AnimatedSprite2D.play("idle")
 
@@ -267,16 +274,19 @@ func melee_attack() -> void:
 		attacking = false
 		return
 
+	$AnimatedSprite2D.modulate = Color.WHITE   # wind-up over, the hit happens now
+
 	# Spawn the meele scene in front of the enemy as the hitbox
 	hit_landed = false
 	if meele_scene:
 		var hitbox = meele_scene.instantiate()
 
 		# Works with a plain duplicate of your meele scene, no editor changes needed:
-		# 1) if the duplicate still has the old script, switch it off so only THIS script deals damage
+		# 1) clear anything left over from the player's version, so only THIS script decides what the hitbox does.
+		#    (enemy_melee.tscn still has a body_entered connection to "_touching_enemy", which no longer exists)
+		for connection in hitbox.body_entered.get_connections():
+			hitbox.body_entered.disconnect(connection["callable"])
 		if hitbox.get_script() != null:
-			for connection in hitbox.body_entered.get_connections():
-				hitbox.body_entered.disconnect(connection["callable"])
 			hitbox.set_script(null)
 		# 2) make the hitbox only detect the player's physics layer (and not sit on any layer itself)
 		hitbox.collision_layer = 0
@@ -305,16 +315,13 @@ func melee_attack() -> void:
 
 # Called when something enters the meele hitbox.
 func _on_meele_hit(body: Node2D) -> void:
-	print("meele hitbox touched: ", body.name, "  groups: ", body.get_groups())   # DEBUG - delete once it works
 	if hit_landed or is_dead or staggered:
 		return
-	if not body.is_in_group("player"):
-		return
-	if body.has_method(player_damage_method):
+	if body.is_in_group("player") and body.has_method("take_hit"):
 		hit_landed = true
-		body.call(player_damage_method, melee_damage)
-	else:
-		push_warning("Player has no function called '" + str(player_damage_method) + "'. Set 'Player Damage Method' on the enemy to your player's damage function name.")
+		# take_hit() is the player's damage function: it checks for a parry first, and if the parry
+		# succeeds it calls get_parried() on us (the attacker) to stun this enemy.
+		body.take_hit(melee_damage, self)
 
 
 

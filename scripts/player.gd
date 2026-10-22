@@ -25,7 +25,9 @@ var parrying = false               # true during the parry window
 var parry_recovering = false       # true after a missed parry
 var parry_timer = 0.0              # seconds left in the current parry phase
 var parry_buffer_timer = 0.0       # seconds left on a remembered parry press
-var health = 5                     # placeholder health so you can see hits land (replace with your own)
+var health = 5                     # current health (set to max_health when the level starts)
+@export var max_health = 5         # how much health the player starts with / the bar's full value
+@export var health_ui: ProgressBar # optional: drag your own ProgressBar here. If left empty, a health bar is created for you (top-right of the screen)
 
 @export var player = CharacterBody2D
 @export var bullet_right_spawn: Marker2D
@@ -40,6 +42,9 @@ var health = 5                     # placeholder health so you can see hits land
 # PARRY: creates the "parry" input (Q key) if you haven't added it in Project Settings > Input Map.
 # Once you've added your own "parry" action there, this does nothing and you can delete it.
 func _ready() -> void:
+	health = max_health
+	_setup_health_bar()
+
 	if not InputMap.has_action("parry"):
 		InputMap.add_action("parry")
 		var key_event := InputEventKey.new()
@@ -184,6 +189,58 @@ func _melee_animation_end() -> void:
 
 
 
+# player.tscn connects AnimatedSprite2D's animation_finished signal to this name, but the function
+# didn't exist, so every time the (non-looping) parry animation finished Godot printed an error.
+func _jump_animation_reset() -> void:
+	pass
+
+
+
+# ---------------- HEALTH BAR ----------------
+
+func _setup_health_bar() -> void:
+	if health_ui == null:
+		# No ProgressBar assigned, so build one on its own CanvasLayer (stays fixed on screen with the camera)
+		var layer = CanvasLayer.new()
+		add_child(layer)
+
+		health_ui = ProgressBar.new()
+		health_ui.show_percentage = false
+		# anchored to the top-right corner of the screen: 300 wide, 28 tall, 20 px from the edges
+		health_ui.anchor_left = 1.0
+		health_ui.anchor_right = 1.0
+		health_ui.offset_left = -320
+		health_ui.offset_right = -20
+		health_ui.offset_top = 20
+		health_ui.offset_bottom = 48
+
+		var fill = StyleBoxFlat.new()
+		fill.bg_color = Color(0.85, 0.2, 0.2)   # red bar
+		fill.set_corner_radius_all(6)
+		health_ui.add_theme_stylebox_override("fill", fill)
+
+		var back = StyleBoxFlat.new()
+		back.bg_color = Color(0.1, 0.1, 0.1, 0.8)   # dark background
+		back.border_color = Color(0, 0, 0, 0.9)
+		back.set_border_width_all(2)
+		back.set_corner_radius_all(6)
+		health_ui.add_theme_stylebox_override("background", back)
+
+		layer.add_child(health_ui)
+
+	health_ui.min_value = 0
+	health_ui.max_value = max_health
+	health_ui.value = health
+
+
+# Slides the bar down smoothly. Call this any time health changes (it's already called in take_hit).
+func _update_health_bar() -> void:
+	if health_ui == null:
+		return
+	create_tween().tween_property(health_ui, "value", health, 0.2)
+
+
+
 func add_score() -> void:
 	score += 1
 	print(score)
@@ -208,6 +265,7 @@ func _handle_parry(delta) -> bool:
 		parrying = false
 		parry_recovering = true
 		parry_timer = parry_recovery
+		$AnimatedSprite2D.modulate = Color(0.6, 0.6, 0.6)   # grey = missed, you are stuck recovering
 	elif parry_recovering and parry_timer <= 0.0:
 		parry_recovering = false
 		$AnimatedSprite2D.modulate = Color.WHITE
@@ -223,8 +281,12 @@ func _start_parry() -> void:
 	parry_timer = parry_window
 	parry_buffer_timer = 0.0
 	running = false
-	# Plays a "parry" animation if you've made one in your AnimatedSprite2D, otherwise just tints blue.
+	$AnimatedSprite2D.modulate = Color(0.45, 0.7, 1.0)   # blue = your parry window is open
 	if $AnimatedSprite2D.sprite_frames.has_animation("parry"):
+		# stop + frame 0 so the animation restarts even when "parry" was the last animation played
+		# (this is what happens with a buffered parry press, which used to show no animation at all)
+		$AnimatedSprite2D.stop()
+		$AnimatedSprite2D.frame = 0
 		$AnimatedSprite2D.play("parry")
 
 
@@ -236,8 +298,9 @@ func take_hit(damage: int, attacker: Node) -> void:
 		return
 
 	# Not parried: placeholder damage. Replace with your own damage / game over code.
-	health -= damage
+	health = maxi(health - damage, 0)
 	print("Player health: ", health)
+	_update_health_bar()
 	$AnimatedSprite2D.modulate = Color.RED
 	create_tween().tween_property($AnimatedSprite2D, "modulate", Color.WHITE, 0.2)
 	if health <= 0:
@@ -249,7 +312,8 @@ func _on_parry_success(attacker: Node) -> void:
 	parrying = false
 	parry_recovering = false
 	parry_timer = 0.0
-	parry_buffer_timer = 0.0 
+	parry_buffer_timer = 0.0
+	$AnimatedSprite2D.modulate = Color(1.0, 0.95, 0.4)   # gold flash on a successful parry
 	create_tween().tween_property($AnimatedSprite2D, "modulate", Color.WHITE, 0.25)
 	if attacker.has_method("get_parried"):
 		attacker.get_parried()   # the enemy / bullet decides what being parried does

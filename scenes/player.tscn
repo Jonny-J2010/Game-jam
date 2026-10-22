@@ -418,8 +418,15 @@ animations = [{
 "speed": 12.0
 }]
 
-[node name="CharacterBody2D" type="CharacterBody2D" unique_id=1306767414 node_paths=PackedStringArray("player", "bullet_right_spawn", "bullet_left_spawn", "ammo_label")]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4vfid"]
+bg_color = Color(0.592742, 0.022420747, 1.92523e-07, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ljgr3"]
+bg_color = Color(0.16528097, 0.7222894, 0, 1)
+
+[node name="CharacterBody2D2" type="CharacterBody2D" unique_id=1306767414 node_paths=PackedStringArray("health_ui", "player", "bullet_right_spawn", "bullet_left_spawn", "ammo_label")]
 script = ExtResource("1_bpsgo")
+health_ui = NodePath("Camera2D/ProgressBar")
 player = NodePath(".")
 bullet_right_spawn = NodePath("Right_Muzzle")
 bullet_left_spawn = NodePath("Left_Muzzle")
@@ -455,6 +462,17 @@ theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 80
 text = "20"
+
+[node name="ProgressBar" type="ProgressBar" parent="Camera2D" unique_id=974069291]
+offset_left = 179.30006
+offset_top = -276.59998
+offset_right = 535.30005
+offset_bottom = -233.59998
+theme_override_styles/background = SubResource("StyleBoxFlat_4vfid")
+theme_override_styles/fill = SubResource("StyleBoxFlat_ljgr3")
+max_value = 5.0
+step = 1.0
+show_percentage = false
 
 [node name="Right_Muzzle" type="Marker2D" parent="." unique_id=314438539]
 position = Vector2(32.69994, 1.5999718)
