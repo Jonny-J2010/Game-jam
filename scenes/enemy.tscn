@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dr6rus2iff1nx" path="res://scripts/enemy.gd" id="1_2drwo"]
 [ext_resource type="Texture2D" uid="uid://cgir0cng7hvc6" path="res://enemy/Dead (1).png" id="1_tqa47"]
 [ext_resource type="Texture2D" uid="uid://dxfykkelidxqp" path="res://enemy/Dead (2).png" id="2_akc8q"]
-[ext_resource type="PackedScene" uid="uid://b841js8l1lgnv" path="res://scenes/bullet.tscn" id="2_ldkvj"]
+[ext_resource type="PackedScene" uid="uid://nktljccsvqsc" path="res://scenes/enemy_melee.tscn" id="2_ldkvj"]
 [ext_resource type="Texture2D" uid="uid://bhct1hx76locd" path="res://enemy/Dead (3).png" id="3_3d3oh"]
 [ext_resource type="Texture2D" uid="uid://cmeh3m2ku63nm" path="res://enemy/Dead (4).png" id="4_2rjsx"]
 [ext_resource type="Texture2D" uid="uid://suas0snddd8s" path="res://enemy/Dead (5).png" id="5_raesi"]
@@ -400,12 +400,10 @@ bg_color = Color(0.008809805, 0.7283706, 5.7756904e-07, 1)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ldkvj"]
 size = Vector2(642.5, 430.5)
 
-[node name="CharacterBody2D" type="CharacterBody2D" unique_id=1688573677 node_paths=PackedStringArray("health_ui", "bullet_right_spawn", "bullet_left_spawn")]
+[node name="CharacterBody2D" type="CharacterBody2D" unique_id=1688573677 node_paths=PackedStringArray("health_ui")]
 script = ExtResource("1_2drwo")
 health_ui = NodePath("ProgressBar")
-bullet_scene = ExtResource("2_ldkvj")
-bullet_right_spawn = NodePath("Right_Muzzle")
-bullet_left_spawn = NodePath("Left_Muzzle")
+meele_scene = ExtResource("2_ldkvj")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1833430703]
 scale = Vector2(0.2, 0.2)

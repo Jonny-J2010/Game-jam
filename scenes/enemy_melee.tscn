@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://nktljccsvqsc"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_y0ovp"]
+size = Vector2(51, 117)
+
+[node name="Area2D" type="Area2D" unique_id=1283183487]
+
+[node name="melee_hit" type="Timer" parent="." unique_id=2024906709]
+wait_time = 0.3
+one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1593775646]
+position = Vector2(0.5, 0.5)
+shape = SubResource("RectangleShape2D_y0ovp")
+
+[connection signal="body_entered" from="." to="." method="_touching_enemy"]
+[connection signal="timeout" from="melee_hit" to="." method="_on_melee_hit_timeout"]
