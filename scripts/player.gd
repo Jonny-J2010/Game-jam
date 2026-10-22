@@ -27,7 +27,7 @@ var parry_timer = 0.0              # seconds left in the current parry phase
 var parry_buffer_timer = 0.0       # seconds left on a remembered parry press
 var health = 5                     # current health (set to max_health when the level starts)
 @export var max_health = 5         # how much health the player starts with / the bar's full value
-@export var health_ui: ProgressBar # optional: drag your own ProgressBar here. If left empty, a health bar is created for you (top-right of the screen)
+@export var health_ui: Range       # your health bar (ProgressBar or TextureProgressBar). Drag it in here, or leave it empty and the script looks for one inside the player scene
 
 @export var player = CharacterBody2D
 @export var bullet_right_spawn: Marker2D
@@ -199,35 +199,20 @@ func _jump_animation_reset() -> void:
 # ---------------- HEALTH BAR ----------------
 
 func _setup_health_bar() -> void:
+	# Use the bar you dragged into the "Health Ui" slot. If the slot is empty,
+	# look for a ProgressBar / TextureProgressBar somewhere inside the player scene.
 	if health_ui == null:
-		# No ProgressBar assigned, so build one on its own CanvasLayer (stays fixed on screen with the camera)
-		var layer = CanvasLayer.new()
-		add_child(layer)
+		for type_name in ["ProgressBar", "TextureProgressBar"]:
+			var found = find_children("*", type_name, true, false)
+			if found.size() > 0:
+				health_ui = found[0]
+				break
 
-		health_ui = ProgressBar.new()
-		health_ui.show_percentage = false
-		# anchored to the top-right corner of the screen: 300 wide, 28 tall, 20 px from the edges
-		health_ui.anchor_left = 1.0
-		health_ui.anchor_right = 1.0
-		health_ui.offset_left = -320
-		health_ui.offset_right = -20
-		health_ui.offset_top = 20
-		health_ui.offset_bottom = 48
+	if health_ui == null:
+		push_warning("No health bar found. Drag your ProgressBar into the 'Health Ui' slot on the player.")
+		return
 
-		var fill = StyleBoxFlat.new()
-		fill.bg_color = Color(0.85, 0.2, 0.2)   # red bar
-		fill.set_corner_radius_all(6)
-		health_ui.add_theme_stylebox_override("fill", fill)
-
-		var back = StyleBoxFlat.new()
-		back.bg_color = Color(0.1, 0.1, 0.1, 0.8)   # dark background
-		back.border_color = Color(0, 0, 0, 0.9)
-		back.set_border_width_all(2)
-		back.set_corner_radius_all(6)
-		health_ui.add_theme_stylebox_override("background", back)
-
-		layer.add_child(health_ui)
-
+	# The script controls the bar's range and value, so you don't need to set them in the editor.
 	health_ui.min_value = 0
 	health_ui.max_value = max_health
 	health_ui.value = health
